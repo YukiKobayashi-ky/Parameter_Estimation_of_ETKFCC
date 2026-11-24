@@ -186,57 +186,56 @@ function run_etkf_npoint(ρ, r, add, n, start_ensemble, eta, true_data)
     end
 
     T = 4*365*10
-    #stat_sum = zeros(Float64, N, 8)
-    rmse_y = Vector{Float64}(undef, T)
-    rmse_xa = Vector{Float64}(undef, T)
-    rmse_xf = Vector{Float64}(undef, T)
+    diff_all = Matrix{Float64}(undef, N*3, 0)
+    diff_tmp = Vector{Float64}(undef, N*3)
     for t in 1:T
         step_matrix!(Xf_next, Xf)
 
         xf_mean = vec(sum(Xf_next, dims=2)) ./ Float64(m)
         d = xf_mean .- true_data[:,k]
-        rmse_xf[t] = sqrt(sum(d.*d) / Float64(N))
+        diff_tmp[1:N] .= d
 
         y = copy(true_data[:,k])
         y[1:n] .+= add * d[1:n]
         y .+= eta[:,k]
 
         d = y .- true_data[:,k]
-        rmse_y[t] = sqrt(sum(d.*d) / Float64(N))
+        diff_tmp[N+1:2*N] .= d
 
         Xa, _ = etkf(Xf_next, y)
         xa_mean = vec(sum(Xa, dims=2)) ./ Float64(m)
         d = xa_mean .- true_data[:,k]
-        rmse_xa[t] = sqrt(sum(d.*d) / Float64(N))
+        diff_tmp[2*N+1:end] .= d
         
+        diff_all = hcat(diff_all, copy(diff_tmp))
 
         Xf = copy(Xa)
         k += 1
     end
 
-    rmse_ratio = rmse_xa ./ rmse_y
-
-    df = DataFrame(
-        rmse_ratio=rmse_ratio,
-        rmse_y=rmse_y,
-        rmse_xa=rmse_xa,
-        rmse_xf=rmse_xf,
+    name = vcat(
+        [Symbol("error_xf_$(i)") for i in 1:N],
+        [Symbol("error_y_$(i)") for i in 1:N],
+        [Symbol("error_xa_$(i)") for i in 1:N],
     )
+    df = DataFrame(transpose(diff_all), name)
     CSV.write("./point_estimation/"*@sprintf("optimal_timeseries_etkf_%dpoint", n)*@sprintf("_add=%.1f.csv", add),df)
 end
 
 function optimal_etkf_timeseries()
     add = 0.6
-    ns = [1, 10, 30, 39]
-    ρs = [1.02, 1.06, 1.20, 1.30]
-    rs = [7.0, 3.0, 3.0, 1.8]
+
+    tuning_parameters = CSV.read(@sprintf("./point_estimation/etkf_optimal_tuning_parameters_add=%.1f.csv", add), DataFrame)
+    ks = tuning_parameters.k
+    ρs = tuning_parameters.multi_inf
+    rs = tuning_parameters.r
 
     eta = CSV.read("./eta.csv", DataFrame; header=false) |> Matrix |> transpose |> copy
     start_ensemble = CSV.read("./start_ensemble.csv", DataFrame; header=false) |> Matrix
     true_data = CSV.read("./true_data.csv", DataFrame; header=false) |> Matrix |> transpose |> copy
 
-    Threads.@threads for i in  1:length(ns)
-        run_etkf_npoint(ρs[i], rs[i], add, ns[i], start_ensemble, eta, true_data)
+    Threads.@threads for i in  1:length(ks)
+        run_etkf_npoint(ρs[i], rs[i], add, ks[i], start_ensemble, eta, true_data)
     end
     
 end
@@ -331,60 +330,60 @@ function run_ETKFCC(ρ, ruc_sys, add_sys, add_true, start_ensemble, eta, true_da
     end
 
     T = 4*365*10
-    rmse_y = Vector{Float64}(undef, T)
-    rmse_xa = Vector{Float64}(undef, T)
-    rmse_xf = Vector{Float64}(undef, T)
+    diff_all = Matrix{Float64}(undef, N*3, 0)
+    diff_tmp = Vector{Float64}(undef, N*3)
     for t in 1:T
         step_matrix!(Xf_next, Xf)
 
         xf_mean = vec(sum(Xf_next, dims=2)) ./ Float64(m)
         d = xf_mean .- true_data[:,k]
-        rmse_xf[t] = sqrt(sum(d.*d) / Float64(N))
+        diff_tmp[1:N] .= d
 
         y = copy(true_data[:,k])
         y .+= add_true .* d
         y .+= eta[:,k]
 
         d = y .- true_data[:,k]
-        rmse_y[t] = sqrt(sum(d.*d) / Float64(N))
+        diff_tmp[N+1:2*N] .= d
 
         Xa, _ = etkfcc(Xf_next, y)
         xa_mean = vec(sum(Xa, dims=2)) ./ Float64(m)
         d = xa_mean .- true_data[:,k]
-        rmse_xa[t] = sqrt(sum(d.*d) / Float64(N))
+        diff_tmp[2*N+1:end] .= d
+
+        diff_all = hcat(diff_all, copy(diff_tmp))
 
         Xf = copy(Xa)
         k += 1
     end
 
-    rmse_ratio = rmse_xa ./ rmse_y
-
-    df = DataFrame(
-        rmse_ratio=rmse_ratio,
-        rmse_y=rmse_y,
-        rmse_xa=rmse_xa,
-        rmse_xf=rmse_xf,
+    column = vcat(
+        [Symbol("error_xf_$(i)") for i in 1:N],
+        [Symbol("error_y_$(i)") for i in 1:N],
+        [Symbol("error_xa_$(i)") for i in 1:N],
     )
+    df = DataFrame(transpose(diff_all), column)
     CSV.write("./point_estimation_cc/optimal_timeseries_etkfcc_"*name*@sprintf("_%dpoint", n)*@sprintf("_add=%.1f.csv", add),df)
 
 end
 
 function optimal_etkfcc_with_true_timeseries()
     add = 0.6
-    ns = [1, 10, 30, 39]
-    ρs = [1.02, 1.03, 1.04, 1.04]
+    tuning_parameters = CSV.read(@sprintf("./point_estimation_cc/etkfcc_with_true_optimal_tuning_parameters_add=%.1f.csv", add), DataFrame)
+    ks = tuning_parameters.k
+    ρs = tuning_parameters.multi_inf
 
     eta = CSV.read("./eta.csv", DataFrame; header=false) |> Matrix |> transpose |> copy
     start_ensemble = CSV.read("./start_ensemble.csv", DataFrame; header=false) |> Matrix
     true_data = CSV.read("./true_data.csv", DataFrame; header=false) |> Matrix |> transpose |> copy
 
-    Threads.@threads for i in  1:length(ns)
+    Threads.@threads for i in  1:length(ks)
         add_true = zeros(Float64, N)
-        add_true[1:ns[i]] .= add
+        add_true[1:ks[i]] .= add
         add_sys = zeros(Float64, N)
-        add_sys[1:ns[i]] .= add
+        add_sys[1:ks[i]] .= add
         ruc_sys = ones(Float64, N)
-        run_ETKFCC(ρs[i], ruc_sys, add_sys, add_true, start_ensemble, eta, true_data, "with_true", ns[i], add)
+        run_ETKFCC(ρs[i], ruc_sys, add_sys, add_true, start_ensemble, eta, true_data, "with_true", ks[i], add)
     end
 end
 
@@ -392,20 +391,21 @@ end
 
 function optimal_etkfcc_with_est_timeseries()
     add = 0.6
-    ns = [1, 10, 30, 39]
-    ρs = [1.02, 1.02, 1.02, 1.04]
+    tuning_parameters = CSV.read(@sprintf("./point_estimation_cc/etkfcc_with_est_optimal_tuning_parameters_add=%.1f.csv", add), DataFrame)
+    ks = tuning_parameters.k
+    ρs = tuning_parameters.multi_inf
 
     eta = CSV.read("./eta.csv", DataFrame; header=false) |> Matrix |> transpose |> copy
     start_ensemble = CSV.read("./start_ensemble.csv", DataFrame; header=false) |> Matrix
     true_data = CSV.read("./true_data.csv", DataFrame; header=false) |> Matrix |> transpose |> copy
 
-    Threads.@threads for i in  1:length(ns)
+    Threads.@threads for i in  1:length(ks)
         add_true = zeros(Float64, N)
-        add_true[1:ns[i]] .= add
-        parameters = CSV.read("./point_estimation/"*@sprintf("estimated_parameters_%dpoint", ns[i])*@sprintf("_add=%.1f.csv", add), DataFrame)
+        add_true[1:ks[i]] .= add
+        parameters = CSV.read("./point_estimation/"*@sprintf("estimated_parameters_%dpoint", ks[i])*@sprintf("_add=%.1f.csv", add), DataFrame)
         add_sys = parameters.add_est
         ruc_sys = parameters.ruc_est
-        run_ETKFCC(ρs[i], ruc_sys, add_sys, add_true, start_ensemble, eta, true_data, "with_est", ns[i], add)
+        run_ETKFCC(ρs[i], ruc_sys, add_sys, add_true, start_ensemble, eta, true_data, "with_est", ks[i], add)
     end
 end
 

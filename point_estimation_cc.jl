@@ -324,17 +324,13 @@ function output_npoint_ETKFCC_with_est(add, n)
 end
 
 
-#output_npoint_ETKFCC_with_true(0.6, 0)
-#output_npoint_ETKFCC_with_true(0.6, 40)
 
 #=
-output_npoint_ETKFCC_with_true(0.6, 1)
-output_npoint_ETKFCC_with_true(0.6, 10)
-output_npoint_ETKFCC_with_true(0.6, 30)
-output_npoint_ETKFCC_with_true(0.6, 39)
-
-output_npoint_ETKFCC_with_est(0.6, 1)
-output_npoint_ETKFCC_with_est(0.6, 10)
-output_npoint_ETKFCC_with_est(0.6, 30)
-output_npoint_ETKFCC_with_est(0.6, 39)
+for i in 0:40
+    output_npoint_ETKFCC_with_true(0.6, i)
+end
 =#
+
+for i in 0:40
+    output_npoint_ETKFCC_with_est(0.6, i)
+end

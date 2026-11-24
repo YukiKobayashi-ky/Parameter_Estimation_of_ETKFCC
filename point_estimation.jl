@@ -275,19 +275,12 @@ function output_add_npoint(add, n)
     append!(name, [Symbol("ab_oa_$(i)") for i in 1:N])
 
     df = DataFrame(results, name)
-    CSV.write("./point_estimation/"*@sprintf("point_estimation_%dpoint", n)*@sprintf("_add=%.1f.csv", add), df)
+    CSV.write("./point_estimation/"*@sprintf("etkf_%dpoint", n)*@sprintf("_add=%.1f.csv", add), df)
     
 end
 
-#output_add_npoint(0.6, 0)
-#output_add_npoint(0.6, 40)
-
-#output_add_npoint(0.6, 1)
-#output_add_npoint(0.6, 5)
-#output_add_npoint(0.6, 10)
-#output_add_npoint(0.6, 15)
-#output_add_npoint(0.6, 20)
-#output_add_npoint(0.6, 25)
-#output_add_npoint(0.6, 30)
-#output_add_npoint(0.6, 35)
-#output_add_npoint(0.6, 39)
+#=
+for k in 0:40
+    output_add_npoint(0.6, k)
+end
+=#

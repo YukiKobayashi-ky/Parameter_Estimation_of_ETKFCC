@@ -96,7 +96,7 @@ def get_color_code(cname,num):
 ##################################################################################
 # 本番用
 ##################################################################################
-def fig2_ETKF_data(inf,innovation1,innovation2):
+def fig_ETKF_data(inf,innovation1,innovation2):
     ### ETKF ###
     df = pd.read_csv('ETKF_tuning.csv', comment='#')
     df_calc = df.query('analysis_error > 0.0')
@@ -209,10 +209,10 @@ def fig2_ETKF_data(inf,innovation1,innovation2):
         ax.set_ylim(0,11)
 
     fig.subplots_adjust(bottom=0.05,top=0.99, left=0.13, right=0.98)
-    plt.savefig("Fig2_ETKF.png")
+    plt.savefig("Fig_ETKF.png")
     #plt.show()
 
-def fig3_parameter_estimations(inf,innovation1,innovation2):
+def fig_parameter_estimations(inf,innovation1,innovation2):
     optimal_etkf, optimal_etkfcc, estimated_etkfcc = optimal_data(inf,innovation1,innovation2)
     df = optimal_etkf
     fig = plt.figure(figsize = (10, 24))
@@ -245,7 +245,7 @@ def fig3_parameter_estimations(inf,innovation1,innovation2):
     ax1.vlines(0.0, ymin=-5,ymax=2, colors='black', linewidth=0.8)
     ax1.hlines(0.0, xmin=-2,xmax=1, colors='black', linewidth=0.8)
     ax1.plot(np.arange(-1.0,1.1,0.1), np.arange(-1.0,1.1,0.1), ":", color='black', zorder=0)
-    ax1.plot(a_true, a_est_ab_ob, "-o", color='black', label='Eq.(20) : $<d^{a-b}(d^{o-b})^\\mathrm{T}>$')
+    ax1.plot(a_true, a_est_ab_ob, "-o", color='black', label='Eq.(13-1) : $<d^{a-b}(d^{o-b})^\\mathrm{T}>$')
 
     ax1.legend(loc='upper left',fontsize=18)
 
@@ -287,13 +287,13 @@ def fig3_parameter_estimations(inf,innovation1,innovation2):
     line_abob_obob, = ax2.plot(a_true, ruc, "-o", color="red")
   
     ax2.legend([line_abob_obob,], \
-                ["Eq.(21) : $<d^{a-b}(d^{o-b})^\\mathrm{T}> \\times <d^{o-b}(d^{o-b})^\\mathrm{T}>$",], \
+                ["Eq.(13-2) : $<d^{a-b}(d^{o-b})^\\mathrm{T}> \\times <d^{o-b}(d^{o-b})^\\mathrm{T}>$",], \
                     loc='upper left',fontsize=18,handler_map={tuple: HandlerTuple(ndivide=None)},handlelength=4,ncol=1)
 
 
     # estimation differential scale
     ax = fig.add_subplot(3,1,3)
-    ax.set_title("(c) Error amplication scale of parameter estimations",fontsize=20)
+    ax.set_title("(c) Sensitivity factors and forecast variances",fontsize=20)
 
     ax.set_xlabel("True parameter $a^{true}$", fontsize=20)
     x_major_tick = (-1,-0.5,0,0.5,1)
@@ -326,7 +326,7 @@ def fig3_parameter_estimations(inf,innovation1,innovation2):
 
 
     fig.subplots_adjust(bottom=0.05,top=0.98,left=0.13,right=0.97)
-    plt.savefig("Fig3_parameter_estimations.png")
+    plt.savefig("Fig_parameter_estimations.png")
     plt.show()
 
 
@@ -396,7 +396,7 @@ def get_short_estimation(window):
     df_all = pd.concat([df for df in dfs if not df.empty], ignore_index=True)
     return df_all
 
-def fig4_parameter_estimation_convergence():
+def fig_parameter_estimation_convergence():
     window = {"1day":4, "1week":4*7, "1month":4*30, "1year":4*365, "10year":4*365*10}
     df_all = get_short_estimation(window)
 
@@ -461,10 +461,10 @@ def fig4_parameter_estimation_convergence():
                     label="$a^{true}$="+f"{add_true[i]:.1f}",
         )
 
-    ax1.set_title("(a) Convergence of $a^{est}$", fontsize=20)
-    ax1.set_xlabel(f"window size", fontsize=20)
+    ax1.set_title("(a) Estimates of $a$ versus window length", fontsize=20)
+    ax1.set_xlabel(f"Estimation-window length", fontsize=20)
     ax1.set_xticks(range(len(window)), minor=False)
-    ax1.set_xticklabels(list(window) ,fontsize=20)
+    ax1.set_xticklabels(["1 day", "1 week", "1 month", "1 year", "10 years"] ,fontsize=20)
     ax1.set_ylabel("Estimated parameter $a^{est}$", fontsize=20)
     y_range = [-2, -1.5, -1, -0.5, 0, 0.5, 1]
     ax1.set_yticks(y_range, minor=False)
@@ -473,10 +473,10 @@ def fig4_parameter_estimation_convergence():
     ax1.set_ylim(y_range[0], y_range[-1])
     ax1.legend(fontsize=18,loc='lower right')
 
-    ax2.set_title("(b) Convergence of $r^{uc\_est}$", fontsize=20)
-    ax2.set_xlabel(f"window size", fontsize=20)
+    ax2.set_title("(b) Estimates of $r^{uc}$ versus window length", fontsize=20)
+    ax2.set_xlabel(f"Estimation-window length", fontsize=20)
     ax2.set_xticks(range(len(window)), minor=False)
-    ax2.set_xticklabels(list(window) ,fontsize=20)
+    ax2.set_xticklabels(["1 day", "1 week", "1 month", "1 year", "10 years"] ,fontsize=20)
     ax2.set_ylabel("Estimated parameter $r^{uc\_est}$", fontsize=20)
     y_range = [0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6]
     ax2.set_yticks(y_range, minor=False)
@@ -486,12 +486,12 @@ def fig4_parameter_estimation_convergence():
     ax2.legend(fontsize=18,loc='lower right')
 
     plt.subplots_adjust(bottom=0.1,top=0.93,left=0.06,right=0.99) 
-    plt.savefig("Fig4_short-time_estimation.png")
+    plt.savefig("Fig_short-time_estimation.png")
     #plt.show()
 
 
 
-def fig5_estimated_ETKFCC_tuning(inf,innovation1,innovation2):
+def fig_estimated_ETKFCC_tuning(inf,innovation1,innovation2):
     df = pd.read_csv(innovation1+'_'+innovation2+'_ETKFCC.csv', comment='#')
 
     analysis_RMSE = np.empty((11,20))
@@ -569,8 +569,8 @@ def fig5_estimated_ETKFCC_tuning(inf,innovation1,innovation2):
         ax.set_ylim(0,11)
 
     fig.subplots_adjust(bottom=0.01,top=0.995,left=0.08,right=0.98, hspace=0.03, wspace=0.2)
-    plt.savefig("Fig5_estimated_ETKFCC_tuning.png")
-    plt.show()
+    plt.savefig("Fig_estimated_ETKFCC_tuning.png")
+    #plt.show()
 
 def bootstrap_RMSE_ratio_unit(df):
     df_sample = df.sample(n=df.shape[0], replace=True)
@@ -700,13 +700,13 @@ def effective_est(inf,innovation1,innovation2):
     return face_colors
 
 
-def fig6_optimal_data(inf,innovation1,innovation2):
+def fig_optimal_data(inf,innovation1,innovation2):
     optimal_etkf, optimal_etkfcc, estimated_etkfcc = optimal_data(inf,innovation1,innovation2)
 
     dfs = [optimal_etkf, optimal_etkfcc, estimated_etkfcc]
     color = ["gray","black","r"]
     line = ["-^","-v","-o"]
-    name = ["Optimal ETKF","Optimal ETKFCC","Estimated ETKFCC"]
+    name = ["Standard ETKF","ETKFCC (true parameters)","ETKFCC (estimated parameters)"]
     a_true = []
     analysis_RMSE_ratio = []
     correlation = []
@@ -724,7 +724,7 @@ def fig6_optimal_data(inf,innovation1,innovation2):
     minor_tick = [np.arange(-1,1,0.1), np.arange(0,1,0.1), np.arange(-1,1,0.1)]
 
     XY = [(0,1), (2,1)]
-    title = ["(a)Comparing based on $a^{true}$","(b)Comparing based on correlation coefficient"]
+    title = ["(a) Comparing based on $a^{true}$","(b) Comparing based on correlation coefficient"]
 
     fig = plt.figure(figsize = (10, 15))
     for i in range(2):
@@ -752,11 +752,11 @@ def fig6_optimal_data(inf,innovation1,innovation2):
             ax.scatter(item[XY[i][0]][2], item[XY[i][1]][2], s=40, c=effective_est(inf,innovation1,innovation2), edgecolors='red', zorder=3)
 
     fig.subplots_adjust(bottom=0.05,top=0.95)
-    plt.savefig("Fig6_optimal_data.png")
-    plt.show()
+    plt.savefig("Fig_optimal_data.png")
+    #plt.show()
 
 
-def fig7_stability_of_parameter_estimation(innovation1,innovation2):
+def fig_stability_of_parameter_estimation(innovation1,innovation2):
     ### ETKF ###
     df = pd.read_csv('ETKF_tuning.csv', comment='#')
     df_calc = df.query('analysis_error > 0.0')
@@ -832,7 +832,7 @@ def fig7_stability_of_parameter_estimation(innovation1,innovation2):
     pre_mask = [pre_mask[19:,:],pre_mask[10:21,:],pre_mask[:11,:]]
 
     data = [add_diff,Ruc_diff]
-    title = ["(a) $a^{est}$ from suboptimal ETKF","(b) $r^{uc\_est}$ from suboptimal ETKF"]
+    title = ["(a) $a^{est} - a^{true}$","(b) $r^{uc\_est} - r^{uc\_true}$"]
     label = ["$a^{est} - a^{true}$","$r^{uc\_est} - r^{uc\_true}$"]
     colors = [10,10,10,10]
     
@@ -907,10 +907,10 @@ def fig7_stability_of_parameter_estimation(innovation1,innovation2):
         ax.set_ylim(0,11)
 
     fig.subplots_adjust(bottom=0.07,top=0.95,left=0.08,right=0.98)
-    plt.savefig("Fig7_stability_of_parameter_estimation.png")
-    plt.show()
+    plt.savefig("Fig_stability_of_parameter_estimation.png")
+    #plt.show()
 
-def fig8_stability_of_accuracy(innovation1,innovation2):
+def fig_stability_of_accuracy(innovation1,innovation2):
     ### ETKF ###
     df = pd.read_csv('ETKF_tuning.csv', comment='#')
     df_calc = df.query('analysis_error > 0.0')
@@ -1026,7 +1026,7 @@ def fig8_stability_of_accuracy(innovation1,innovation2):
     data = [etkf_analysis_RMSE_ratio,etkfcc_analysis_RMSE_ratio,ratio_diff]
     title = ["(a) ETKF","(b) ETKFCC using $a^{est}$ and $r^{uc\_est}$\n  from  ETKF","(c) Difference"]
     #label = ["RMSE ratio","RMSE ratio","$\\delta$RMSE ratio"]
-    label = ["RMSE ratio","RMSE ratio","ETKF - ETKFCC"]
+    label = ["RMSE ratio","RMSE ratio","ETKFCC $-$ ETKF"]
     colors = [11,11,11]
     
     bounds = [[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0],[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0],[-0.1,-0.08,-0.06,-0.04,-0.02,0,0.02,0.04,0.06,0.08,0.1]]
@@ -1106,8 +1106,8 @@ def fig8_stability_of_accuracy(innovation1,innovation2):
         ax.set_ylim(0,11)
 
     fig.subplots_adjust(bottom=0.07,top=0.90,left=0.05,right=0.98)
-    plt.savefig("Fig8_stability_of_accuracy.png")
-    plt.show()
+    plt.savefig("Fig_stability_of_accuracy.png")
+    #plt.show()
 
 def get_optimal(df):
     df_calc = df.query('rmse_a > 0.0')
@@ -1115,19 +1115,19 @@ def get_optimal(df):
 
     return df_calc.loc[df_calc["rmse_a"].idxmin()]
 
-def fig9_spatially_varying_estimations():
-    fig = plt.figure(figsize = (18, 10))
-    
-    ax1 = fig.add_subplot(1,2,1)
+def fig_point_est(add, num_est, num_rmseratio):
+    fig = plt.figure(figsize = (10, 24))
+        
+    ax1 = fig.add_subplot(3,1,1)
     ax1.set_title("(a) Point estimation : $a^{est}_i$", fontsize=20)
-    ax1.set_xlabel("Location", fontsize=20)
+    ax1.set_xlabel("Location index $i$", fontsize=20)
     x_major_tick = [1, 10, 20, 30, 40]
     x_minor_tick = np.arange(1,40)
     ax1.set_xticks(x_major_tick,minor=False)
     ax1.set_xticklabels(["{}".format(x_major_tick[i]) for i in range(len(x_major_tick))],fontsize=20)
     ax1.set_xticks(x_minor_tick,minor=True)
     ax1.set_xlim(0.0,41.0)
-    ax1.set_ylabel("Estimated parameter $a^{est}_i$", fontsize=20)
+    ax1.set_ylabel("Estimated parameters $a^{est}_i$", fontsize=20)
     y_major_tick = [-0.1, 0, 0.2, 0.4, 0.6, 0.8, 1.0]
     y_minor_tick = np.arange(-1.0,1.0,0.1)
     ax1.set_yticks(y_major_tick,minor=False)
@@ -1135,20 +1135,21 @@ def fig9_spatially_varying_estimations():
     ax1.set_yticks(y_minor_tick,minor=True)
     ax1.set_ylim(-0.1,1.0)
     ax1.hlines(0.0, xmin=0,xmax=41, colors='black', linewidth=0.8)
-    ax1.hlines(0.6, xmin=0,xmax=41, colors='black', linewidth=0.8)
+    ax1.hlines(add, xmin=0,xmax=41, colors='black', linewidth=0.8)
     ax1.vlines(10, ymin=-1,ymax=2, colors="black", linewidth=0.8)
+    ax1.vlines(20, ymin=-1,ymax=2, colors="black", linewidth=0.8)
     ax1.vlines(30, ymin=-1,ymax=2, colors="black", linewidth=0.8)
 
-    ax2 = fig.add_subplot(1,2,2)
+    ax2 = fig.add_subplot(3,1,2)
     ax2.set_title("(b) Point estimation : $r^{uc\_est}_i$", fontsize=20)
-    ax2.set_xlabel("Location", fontsize=20)
+    ax2.set_xlabel("Location index $i$", fontsize=20)
     x_major_tick = [1, 10, 20, 30, 40]
     x_minor_tick = np.arange(1,40)
     ax2.set_xticks(x_major_tick,minor=False)
     ax2.set_xticklabels(["{}".format(x_major_tick[i]) for i in range(len(x_major_tick))],fontsize=20)
     ax2.set_xticks(x_minor_tick,minor=True)
     ax2.set_xlim(0.0,41.0)
-    ax2.set_ylabel("Estimated parameter $r^{uc\_est}_i$", fontsize=20)
+    ax2.set_ylabel("Estimated parameters $r^{uc\_est}_i$", fontsize=20)
     y_major_tick = [0.8, 0.9, 1.0, 1.1, 1.2]
     y_minor_tick = np.arange(0.0,2.0,0.1)
     ax2.set_yticks(y_major_tick,minor=False)
@@ -1157,16 +1158,11 @@ def fig9_spatially_varying_estimations():
     ax2.set_ylim(0.8,1.2)
     ax2.hlines(1.0, xmin=0,xmax=41, colors='black', linewidth=0.8)
     ax2.vlines(10, ymin=-1,ymax=2, colors="black", linewidth=0.8)
+    ax2.vlines(20, ymin=-1,ymax=2, colors="black", linewidth=0.8)
     ax2.vlines(30, ymin=-1,ymax=2, colors="black", linewidth=0.8)
 
-    num = [1, 10, 30, 39]
-    name = ["$i=1$", "$i=1, \cdots, 10$", "$i=1, \cdots, 30$", "$i=1, \cdots, 39$"]
-    #name = ["$a^{true}_i=0.6 (i=1)$\n$a^{true}_i=0.0 (i=2, \cdots, 40)$",
-    #        "$a^{true}_i=0.6 (i=1, \cdots, 10)$\n$a^{true}_i=0.0 (i=11, \cdots, 40)$",
-    #        "$a^{true}_i=0.6 (i=1, \cdots, 30)$\n$a^{true}_i=0.0 (i=31, \cdots, 40)$",
-    #        "$a^{true}_i=0.6 (i=1, \cdots, 39)$\n$a^{true}_i=0.0 (i=40)$",]
-    for i in range(len(num)):
-        df = pd.read_csv(f"./point_estimation/point_estimation_{num[i]}point_add=0.6.csv", comment='#')
+    for k in num_est:
+        df = pd.read_csv(f"./point_estimation/etkf_{k}point_add=0.6.csv", comment='#')
         df_optimal = get_optimal(df)
     
         HBH = df_optimal.filter(like="HBH").to_numpy()
@@ -1178,18 +1174,73 @@ def fig9_spatially_varying_estimations():
         a_est = 1.0 - ab_ob/HBH
         ruc_est = ob_ob - ab_ob*ab_ob/HBH
     
-        ax1.plot(np.arange(1,41), a_est, "-o", label=name[i], zorder=40-num[i])
-        ax2.plot(np.arange(1,41), ruc_est, "-o", label=name[i], zorder=40-num[i])
+        ax1.plot(np.arange(1,41), a_est, "-o", label=f"$k={k}$", zorder=40-k)
+        ax2.plot(np.arange(1,41), ruc_est, "-o", label=f"$k={k}$", zorder=40-k)
 
-    ax1.legend(title="$a^{true}_i=0.6$ location", title_fontsize=20, loc="upper right", fontsize=18)
-    ax2.legend(title="$a^{true}_i=0.6$ location", title_fontsize=20, loc="upper right", fontsize=18)
-    #ax1.legend(loc="upper right", fontsize=17, ncols=2)
-    #ax2.legend(loc="upper right", fontsize=17, ncols=2)
-    fig.subplots_adjust(bottom=0.07,top=0.95,left=0.08,right=0.98)
-    plt.savefig("Fig9_spatially_varying_estimations.png")
+    ax1.legend(loc="upper right", fontsize=18)
+    ax2.legend(loc="upper right", fontsize=18)
 
 
-def fig10_alternative_estimator(inf,innovation1,innovation2):
+    ax3 = fig.add_subplot(3,1,3)
+    ax3.set_title("(c) RMSE ratio with point estimation", fontsize=20)
+    ax3.set_xlabel("Number of contaminated grid points, $k$", fontsize=20)
+    x_major_tick = [0, 10, 20, 30, 40]
+    x_minor_tick = np.arange(1,40)
+    ax3.set_xticks(x_major_tick,minor=False)
+    ax3.set_xticklabels(["{}".format(x_major_tick[i]) for i in range(len(x_major_tick))],fontsize=20)
+    ax3.set_xticks(x_minor_tick,minor=True)
+    ax3.set_xlim(0.0,40.0)
+    ax3.set_ylabel("RMSE ratio", fontsize=20)
+    y_major_tick = [0, 0.2, 0.4, 0.6, 0.8, 1]
+    y_minor_tick = np.arange(0.0,1.0,0.1)
+    ax3.set_yticks(y_major_tick,minor=False)
+    ax3.set_yticklabels(["{}".format(y_major_tick[i]) for i in range(len(y_major_tick))],fontsize=20)
+    ax3.set_yticks(y_minor_tick,minor=True)
+    ax3.set_ylim(0.0,1.0)
+    ax3.vlines(10, ymin=-1,ymax=2, colors="black", linewidth=0.8)
+    ax3.vlines(20, ymin=-1,ymax=2, colors="black", linewidth=0.8)
+    ax3.vlines(30, ymin=-1,ymax=2, colors="black", linewidth=0.8)
+
+    rmse_ratio = []
+    for k in num_rmseratio:
+        df = pd.read_csv(f"./point_estimation/etkf_{k}point_add={add:.1f}.csv", comment='#')
+        df_optimal = get_optimal(df)
+        rmse_ratio.append(df_optimal["RMSEratio"])
+    ax3.plot(num_rmseratio, rmse_ratio, "-^", color="gray", label="ETKF", zorder=0)
+
+    rmse_ratio = []
+    for k in num_rmseratio:
+        df = pd.read_csv(f"./point_estimation_cc/etkfcc_with_true_{k}point_add={add:.1f}.csv", comment='#')
+        df_optimal = get_optimal(df)
+        rmse_ratio.append(df_optimal["RMSEratio"])
+    ax3.plot(num_rmseratio, rmse_ratio, "-v", color="black", label="ETKFCC (true parameters)", zorder=1)
+
+    df_bootstrap = pd.read_csv('./RMSE_ratio_sample_point_est.csv', comment='#')
+    rmse_ratio = []
+    for k in num_rmseratio:
+        df = pd.read_csv(f"./point_estimation_cc/etkfcc_with_est_{k}point_add={add:.1f}.csv", comment='#')
+        df_optimal = get_optimal(df)
+        rmse_ratio_cc_est = df_optimal["RMSEratio"]
+        rmse_ratio.append(rmse_ratio_cc_est)
+        df = pd.read_csv(f"./point_estimation/etkf_{k}point_add={add:.1f}.csv", comment='#')
+        df_optimal = get_optimal(df)
+        rmse_ratio_etkf = df_optimal["RMSEratio"]
+        diff = df_bootstrap[f"opt_ETKFCC_with_est_k={k}_add={add:.1f}"].to_numpy() - df_bootstrap[f"opt_ETKF_k={k}_add={add:.1f}"].to_numpy()
+        if (np.count_nonzero(diff < 0) / df.shape[0] > 0.99) and (1 - rmse_ratio_cc_est/rmse_ratio_etkf > 0.05):
+            facecolor = "white"
+        else:
+            facecolor = "red"
+        ax3.scatter(k, rmse_ratio_cc_est, s=40, c=facecolor, edgecolors='red', zorder=3)
+    ax3.plot(num_rmseratio, rmse_ratio, "-o", color="red", label="ETKFCC (estimated parameters)", zorder=2)
+    
+    ax3.legend(loc="upper right", fontsize=18)
+
+    fig.subplots_adjust(bottom=0.04,top=0.98,left=0.12,right=0.98)
+    plt.savefig("Fig_point_est.png")
+    #plt.show()
+
+
+def fig_alternative_estimator(inf,innovation1,innovation2):
     optimal_etkf, optimal_etkfcc, estimated_etkfcc = optimal_data(inf,innovation1,innovation2)
     #optimal_etkf = optimal_data(inf,innovation1,innovation2)
     df = optimal_etkf
@@ -1227,8 +1278,8 @@ def fig10_alternative_estimator(inf,innovation1,innovation2):
     ax1.vlines(0.0, ymin=-5,ymax=2, colors='black', linewidth=0.8)
     ax1.hlines(0.0, xmin=-2,xmax=1, colors='black', linewidth=0.8)
     ax1.plot(np.arange(-1.0,1.1,0.1), np.arange(-1.0,1.1,0.1), ":", color='black', zorder=0)
-    ax1.plot(a_true, a_est_ab_ob, "-o", color='black', label='Eq.(20) : $<d^{a-b}(d^{o-b})^\\mathrm{T}>$')
-    ax1.plot(a_true, a_est_ab_oa, ":x", color='black', label='Eq.(E1) : $<d^{a-b}(d^{o-a})^\\mathrm{T}>$')
+    ax1.plot(a_true, a_est_ab_ob, "-o", color='black', label='Eq.(13-1) : $<d^{a-b}(d^{o-b})^\\mathrm{T}>$')
+    ax1.plot(a_true, a_est_ab_oa, ":x", color='black', label='Eq.(D5) : $<d^{a-b}(d^{o-a})^\\mathrm{T}>$')
 
     ax1.legend(loc='upper left',fontsize=18)
 
@@ -1281,13 +1332,13 @@ def fig10_alternative_estimator(inf,innovation1,innovation2):
     line_aboa_oaob, = ax2.plot([-2], [-2], "--x", color="blue")
 
     ax2.legend([line_abob_obob,line_aboa_obob,line_aboa_oaob], \
-                ["Eq.(21) : $<d^{a-b}(d^{o-b})^\\mathrm{T}> \\times <d^{o-b}(d^{o-b})^\\mathrm{T}>$", \
-                 "Eq.(E2) : $<d^{a-b}(d^{o-a})^\\mathrm{T}> \\times <d^{o-b}(d^{o-b})^\\mathrm{T}>$", \
-                 "Eq.(E3) : $<d^{a-b}(d^{o-a})^\\mathrm{T}> \\times <d^{o-a}(d^{o-b})^\\mathrm{T}>$"],\
+                ["Eq.(13-2) : $<d^{a-b}(d^{o-b})^\\mathrm{T}> \\times <d^{o-b}(d^{o-b})^\\mathrm{T}>$", \
+                 "Eq.(D8) : $<d^{a-b}(d^{o-a})^\\mathrm{T}> \\times <d^{o-b}(d^{o-b})^\\mathrm{T}>$", \
+                 "Eq.(D9) : $<d^{a-b}(d^{o-a})^\\mathrm{T}> \\times <d^{o-a}(d^{o-b})^\\mathrm{T}>$"],\
                  loc='upper left',fontsize=18,handler_map={tuple: HandlerTuple(ndivide=None)},handlelength=4,ncol=1)
 
     fig.subplots_adjust(bottom=0.06,top=0.97, left=0.11, right=0.98)
-    plt.savefig("Fig10_alternative_estimator.png")
+    plt.savefig("Fig_alternative_estimator.png")
     #plt.show()
 
 
@@ -1306,14 +1357,14 @@ if __name__ == "__main__":
     #p_test_RMSE_ratio()
     #effective(inf,innovation1,innovation2)
 
-    #fig2_ETKF_data(inf,innovation1,innovation2)
-    #fig3_parameter_estimations(inf,innovation1,innovation2)
-    #fig4_parameter_estimation_convergence()
-    #fig5_estimated_ETKFCC_tuning(inf,innovation1,innovation2)
-    #fig6_optimal_data(inf,innovation1,innovation2)
-    #fig7_stability_of_parameter_estimation(innovation1,innovation2)
-    #fig8_stability_of_accuracy(innovation1,innovation2)
-    #fig9_spatially_varying_estimations()
-    #fig10_alternative_estimator(inf,innovation1,innovation2)
+    #fig_ETKF_data(inf,innovation1,innovation2)
+    #fig_parameter_estimations(inf,innovation1,innovation2)
+    #fig_parameter_estimation_convergence()
+    #fig_estimated_ETKFCC_tuning(inf,innovation1,innovation2)
+    #fig_optimal_data(inf,innovation1,innovation2)
+    #fig_stability_of_parameter_estimation(innovation1,innovation2)
+    #fig_stability_of_accuracy(innovation1,innovation2)
+    #fig_point_est(0.6, [1, 10, 30, 39], [k for k in range(41)])
+    #fig_alternative_estimator(inf,innovation1,innovation2)
 
     pass
